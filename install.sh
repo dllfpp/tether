@@ -225,7 +225,7 @@ if [ -d /etc/pve ] && command -v pct >/dev/null 2>&1; then
     echo
     pick=1
     if [ "$i" -gt 1 ] || [ "$ASSUME_YES" = 0 ]; then
-        printf 'Link Tether to which Claude Code? [1-%s]: ' "$i"
+        printf '   %s❓%s Link Tether to which Claude Code? %s[1-%s]%s: ' "$BL" "$CL" "$DGN" "$i" "$CL"
         read -r pick || pick=
     fi
     CTID=$(printf '%s' "$choices" | sed -n "s/^${pick:-x}:\(.*\)$/\1/p")
