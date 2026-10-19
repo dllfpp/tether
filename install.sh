@@ -32,7 +32,7 @@ TESTED_VIRT=lxc
 TESTED_INIT=openrc
 TESTED_ARCH=x86_64
 TESTED_CLAUDE=2.1.303
-TESTED_PVE=9.0.10
+TESTED_PVE=9.2.21
 LOG=/var/log/tether-install.log
 
 # ------------------------------------------------------------------- look
@@ -64,7 +64,7 @@ EOF
 }
 
 spin_stop() {
-    [ -n "$SPIN_PID" ] && kill "$SPIN_PID" 2>/dev/null && wait "$SPIN_PID" 2>/dev/null
+    if [ -n "$SPIN_PID" ]; then kill "$SPIN_PID" 2>/dev/null || true; wait "$SPIN_PID" 2>/dev/null || true; fi
     SPIN_PID=
     return 0
 }
