@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="893" height="768" viewBox="0 0 893 768" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="14">
+<rect width="893" height="768" rx="10" fill="#0d1117"/>
+<path d="M0 10a10 10 0 0 1 10-10h873a10 10 0 0 1 10 10v24h-893z" fill="#161b22"/>
+<circle cx="20" cy="17.0" r="6" fill="#ff5f57"/>
+<circle cx="40" cy="17.0" r="6" fill="#febc2e"/>
+<circle cx="60" cy="17.0" r="6" fill="#28c840"/>
+<text x="446.5" y="22.0" fill="#8b949e" font-size="13" text-anchor="middle">root@claude: ~</text>
+<text x="43.2" y="84" xml:space="preserve" fill="#56d364" font-weight="700">✔️</text>
+<text x="68.4" y="84" xml:space="preserve" fill="#56d364" font-weight="700">Claude Code found for: root (24 projects)</text>
+<text x="43.2" y="104" xml:space="preserve" fill="#56d364" font-weight="700">✔️</text>
+<text x="68.4" y="104" xml:space="preserve" fill="#56d364" font-weight="700">Environment matches the tested one</text>
+<text x="43.2" y="124" xml:space="preserve" fill="#39c5cf">❓</text>
+<text x="60.0" y="124" xml:space="preserve" fill="#c9d1d9"> User whose Claude Code Tether links to </text>
+<text x="396.0" y="124" xml:space="preserve" fill="#3fb950">[root]</text>
+<text x="446.4" y="124" xml:space="preserve" fill="#c9d1d9">: </text>
+<text x="43.2" y="144" xml:space="preserve" fill="#39c5cf">❓</text>
+<text x="60.0" y="144" xml:space="preserve" fill="#c9d1d9"> Install directory </text>
+<text x="219.6" y="144" xml:space="preserve" fill="#3fb950">[/opt/tether]</text>
+<text x="328.8" y="144" xml:space="preserve" fill="#c9d1d9">: </text>
+<text x="43.2" y="164" xml:space="preserve" fill="#39c5cf">❓</text>
+<text x="60.0" y="164" xml:space="preserve" fill="#c9d1d9"> Port </text>
+<text x="110.4" y="164" xml:space="preserve" fill="#3fb950">[3010]</text>
+<text x="160.8" y="164" xml:space="preserve" fill="#c9d1d9">: </text>
+<text x="43.2" y="184" xml:space="preserve" fill="#39c5cf">❓</text>
+<text x="60.0" y="184" xml:space="preserve" fill="#c9d1d9"> Listen address (0.0.0.0 = whole network, 127.0.0.1 = this machine only) </text>
+<text x="673.2" y="184" xml:space="preserve" fill="#3fb950">[0.0.0.0]</text>
+<text x="748.8" y="184" xml:space="preserve" fill="#c9d1d9">: </text>
+<text x="43.2" y="204" xml:space="preserve" fill="#39c5cf">❓</text>
+<text x="60.0" y="204" xml:space="preserve" fill="#c9d1d9"> IP of your reverse proxy, if any (empty = none) </text>
+<text x="471.6" y="204" xml:space="preserve" fill="#3fb950">[]</text>
+<text x="488.4" y="204" xml:space="preserve" fill="#c9d1d9">: </text>
+<text x="43.2" y="224" xml:space="preserve" fill="#39c5cf">❓</text>
+<text x="60.0" y="224" xml:space="preserve" fill="#c9d1d9"> Path of the claude CLI </text>
+<text x="261.6" y="224" xml:space="preserve" fill="#3fb950">[/root/.local/bin/claude]</text>
+<text x="471.6" y="224" xml:space="preserve" fill="#c9d1d9">: </text>
+<text x="43.2" y="244" xml:space="preserve" fill="#39c5cf">❓</text>
+<text x="60.0" y="244" xml:space="preserve" fill="#c9d1d9"> Save a dedicated Claude login token? (recommended; create it with &#x27;claude setup-token&#x27;) </text>
+<text x="807.6" y="244" xml:space="preserve" fill="#3fb950">[Y/n]</text>
+<text x="849.6" y="244" xml:space="preserve" fill="#c9d1d9">: n</text>
+<text x="43.2" y="264" xml:space="preserve" fill="#39c5cf">❓</text>
+<text x="60.0" y="264" xml:space="preserve" fill="#c9d1d9"> Run the Claude Code daemon as a service, so background jobs survive a reboot? </text>
+<text x="723.6" y="264" xml:space="preserve" fill="#3fb950">[Y/n]</text>
+<text x="765.6" y="264" xml:space="preserve" fill="#c9d1d9">: </text>
+<text x="43.2" y="284" xml:space="preserve" fill="#56d364" font-weight="700">✔️</text>
+<text x="68.4" y="284" xml:space="preserve" fill="#56d364" font-weight="700">Node.js v24.18.1</text>
+<text x="43.2" y="324" xml:space="preserve" fill="#c9d1d9" font-weight="700">Settings</text>
+<text x="18.0" y="344" xml:space="preserve" fill="#c9d1d9">   🖥️</text>
+<text x="51.6" y="344" xml:space="preserve" fill="#c9d1d9">  System           </text>
+<text x="211.2" y="344" xml:space="preserve" fill="#56d364" text-decoration="underline">alpine 3.24 (lxc, openrc)</text>
+<text x="43.2" y="364" xml:space="preserve" fill="#c9d1d9">🤖</text>
+<text x="60.0" y="364" xml:space="preserve" fill="#c9d1d9"> Claude Code      </text>
+<text x="211.2" y="364" xml:space="preserve" fill="#56d364" text-decoration="underline">2.1.303 (/root/.local/bin/claude)</text>
+<text x="43.2" y="384" xml:space="preserve" fill="#c9d1d9">👤</text>
+<text x="60.0" y="384" xml:space="preserve" fill="#c9d1d9"> User             </text>
+<text x="211.2" y="384" xml:space="preserve" fill="#56d364" text-decoration="underline">root</text>
+<text x="43.2" y="404" xml:space="preserve" fill="#c9d1d9">📁</text>
+<text x="60.0" y="404" xml:space="preserve" fill="#c9d1d9"> Install dir      </text>
+<text x="211.2" y="404" xml:space="preserve" fill="#56d364" text-decoration="underline">/opt/tether</text>
+<text x="43.2" y="424" xml:space="preserve" fill="#c9d1d9">🔌</text>
+<text x="60.0" y="424" xml:space="preserve" fill="#c9d1d9"> Port             </text>
+<text x="211.2" y="424" xml:space="preserve" fill="#56d364" text-decoration="underline">3010</text>
+<text x="43.2" y="444" xml:space="preserve" fill="#c9d1d9">🌐</text>
+<text x="60.0" y="444" xml:space="preserve" fill="#c9d1d9"> Listen           </text>
+<text x="211.2" y="444" xml:space="preserve" fill="#56d364" text-decoration="underline">0.0.0.0</text>
+<text x="18.0" y="464" xml:space="preserve" fill="#c9d1d9">   ⚙️</text>
+<text x="51.6" y="464" xml:space="preserve" fill="#c9d1d9">  Daemon service   </text>
+<text x="211.2" y="464" xml:space="preserve" fill="#56d364" text-decoration="underline">installed by Tether</text>
+<text x="43.2" y="504" xml:space="preserve" fill="#56d364" font-weight="700">✔️</text>
+<text x="68.4" y="504" xml:space="preserve" fill="#56d364" font-weight="700">Installing npm packages</text>
+<text x="43.2" y="524" xml:space="preserve" fill="#56d364" font-weight="700">✔️</text>
+<text x="68.4" y="524" xml:space="preserve" fill="#56d364" font-weight="700">Building Tether (a few minutes)</text>
+<text x="43.2" y="544" xml:space="preserve" fill="#56d364" font-weight="700">✔️</text>
+<text x="68.4" y="544" xml:space="preserve" fill="#56d364" font-weight="700">Building node-pty for musl</text>
+<text x="43.2" y="564" xml:space="preserve" fill="#56d364" font-weight="700">✔️</text>
+<text x="68.4" y="564" xml:space="preserve" fill="#56d364" font-weight="700">Copying Tether to /opt/tether</text>
+<text x="43.2" y="584" xml:space="preserve" fill="#56d364" font-weight="700">✔️</text>
+<text x="68.4" y="584" xml:space="preserve" fill="#56d364" font-weight="700">Installed and started the tether service</text>
+<text x="43.2" y="604" xml:space="preserve" fill="#56d364" font-weight="700">✔️</text>
+<text x="68.4" y="604" xml:space="preserve" fill="#56d364" font-weight="700">Tether answers on port 3010</text>
+<text x="43.2" y="644" xml:space="preserve" fill="#56d364" font-weight="700">✔️</text>
+<text x="68.4" y="644" xml:space="preserve" fill="#56d364" font-weight="700">Completed successfully!</text>
+<text x="43.2" y="684" xml:space="preserve" fill="#39c5cf">💡</text>
+<text x="68.4" y="684" xml:space="preserve" fill="#e3b341">Tether is reachable at:</text>
+<text x="68.4" y="704" xml:space="preserve" fill="#56d364" text-decoration="underline">http://192.168.1.50:3010</text>
+<text x="18.0" y="744" xml:space="preserve" fill="#c9d1d9">   Open it and create the admin account (first visit only).</text>
+</svg>

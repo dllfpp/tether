@@ -80,14 +80,12 @@ Then open `http://<container-ip>:3010` and create the admin account.
 from the one-liner to a running Tether in about 2.5 minutes. On anything else (Debian, a VM,
 another Claude Code version...) the wizard shows what differs and asks before changing anything.
 
+<img src="docs/images/wizard-untested.svg" width="574" height="488" alt="On an untested environment the wizard shows what differs and asks before going on">
+
 **From the Proxmox VE host.** Run the same one-liner on the host: the wizard lists the running
 containers that use Claude Code and installs Tether in the one you pick.
 
-```
-  1) CT 201  claude      users: root (24 projects)
-  2) CT 202  dev-box     users: dev (3 projects)
-Link Tether to which Claude Code? [1-2]:
-```
+<img src="docs/images/wizard-host.svg" width="574" height="388" alt="The wizard on the Proxmox VE host lists the containers that use Claude Code">
 
 The one-liner clones the repository in `/opt/tether-src` and starts the wizard (`install.sh`).
 Then it asks:
@@ -102,6 +100,8 @@ Then it asks:
 | Path of the `claude` CLI | detected |
 | A dedicated Claude login token, created with `claude setup-token` | recommended |
 | Run the Claude Code daemon as a service | only asked if no service of yours already does it |
+
+<img src="docs/images/wizard-install.svg" width="893" height="768" alt="The wizard asks a few questions, shows the settings and installs Tether step by step">
 
 It installs the missing packages (Node.js, build tools), builds the app (on Alpine it also
 rebuilds `node-pty` for musl), installs the `tether` service (OpenRC or systemd) and waits until

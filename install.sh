@@ -111,7 +111,8 @@ check_compat() {
     fi
     printf '\n   %s%s╭─ Untested environment ─────────────────────────────────╮%s\n' "$YW" "$BOLD" "$CL"
     printf '%s\n' "$diffs" | while IFS='|' read -r name tested found; do
-        printf '   %s│%s %-14s tested: %-14s here: %s%s%s\n' "$YW" "$CL" "$name" "$tested" "$YW" "${found:-unknown}" "$CL"
+        printf '   %s│%s %-14s tested: %-12.12s here: %s%-12.12s%s %s│%s\n' \
+            "$YW" "$CL" "$name" "$tested" "$YW" "${found:-unknown}" "$CL" "$YW" "$CL"
     done
     printf '   %s╰────────────────────────────────────────────────────────╯%s\n' "$YW" "$CL"
     printf '   Tether may still work, but this combination was never tested.\n\n'
