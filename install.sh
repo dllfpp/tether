@@ -257,6 +257,18 @@ found=$(sh -c "$PROBE")
 [ -n "$found" ] || die "No Claude Code here: no ~/.claude with the claude CLI. Tether links to an existing Claude Code; install and log in to it first (or run this wizard on the Proxmox host to pick a container)."
 msg_ok "Claude Code found for: $found"
 best=$(printf '%s' "$found" | sed 's/) /)\n/g' | sed -n 's/^\([^ ]*\) (\([0-9]*\) projects)$/\2 \1/p' | sort -rn | head -1 | cut -d' ' -f2)
+# Compare with the tested environment before the first question.
+best_home=$(getent passwd "${RUN_USER:-${best:-root}}" 2>/dev/null | cut -d: -f6)
+for c in "${CLAUDE_BIN:-}" "$best_home/.local/bin/claude" "$(command -v claude 2>/dev/null || true)"; do
+    [ -n "$c" ] && [ -x "$c" ] && { early_claude=$("$c" --version 2>/dev/null | head -1 | cut -d' ' -f1); break; }
+done
+check_compat \
+    "System|$TESTED_OS|$OS_FOUND" \
+    "Runs in|$TESTED_VIRT|$VIRT_FOUND" \
+    "Init|$TESTED_INIT|$INIT" \
+    "Architecture|$TESTED_ARCH|$ARCH_FOUND" \
+    "Claude Code|$TESTED_CLAUDE|${early_claude:-}"
+
 ask RUN_USER   "User whose Claude Code Tether links to" "${best:-$(id -un)}"
 RUN_HOME=$(getent passwd "$RUN_USER" 2>/dev/null | cut -d: -f6 || true)
 [ -n "$RUN_HOME" ] || die "User $RUN_USER does not exist."
@@ -274,12 +286,6 @@ done
 [ -d "$RUN_HOME/.claude" ] || die "$RUN_USER has never used Claude Code ($RUN_HOME/.claude is missing)."
 ask CLAUDE_BIN "Path of the claude CLI" "$CLAUDE_BIN"
 CLAUDE_FOUND=$("$CLAUDE_BIN" --version 2>/dev/null | head -1 | cut -d' ' -f1)
-check_compat \
-    "System|$TESTED_OS|$OS_FOUND" \
-    "Runs in|$TESTED_VIRT|$VIRT_FOUND" \
-    "Init|$TESTED_INIT|$INIT" \
-    "Architecture|$TESTED_ARCH|$ARCH_FOUND" \
-    "Claude Code|$TESTED_CLAUDE|$CLAUDE_FOUND"
 
 # ---------------------------------------------------------- dependencies
 need_pkgs=
