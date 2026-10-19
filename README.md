@@ -22,19 +22,19 @@ If that chat is a background job of the Claude Code daemon (`claude --bg`, `clau
 the conversation splits in two and the job never sees the message. Tether treats the daemon as
 the single source of truth: web and terminal always show the same chats, names and states.
 
-| Situation | Original CloudCLI | Tether |
-|---|---|---|
-| Message to a chat that is a job (running or stopped) | `--resume`, conversation splits | delivered **into the job** with `claude attach <id>` |
-| New chat from the web | Agent SDK, invisible in `claude agents` | starts as a **daemon job** from the agent view |
-| Chat open in an interactive terminal | `--resume`, a copy | refused with a message |
-| Shell tab on a job | `claude --resume` | `claude attach <id>` (permissions and menus) |
-| Chat names | first prompt, never updated | same as Claude Code, kept in sync; rename writes back |
-| Job removed in Claude Code (Ctrl+X, `claude rm`) | stays on the web | archived and removed from the sidebar |
-| Job state | none | sidebar and bar above the chat (Working, Waiting for you, Done...) with **Terminal** and **Stop** |
-| Suggested next prompt | none | grey text in the input, as in Claude Code |
-| Move a conversation to another project | none | real move in Claude Code |
-| Push notifications | none | when a job finishes, fails or waits for you |
-| Login | no limit | 5 failures every 15 min per IP, then 429 |
+| | Original CloudCLI | Tether |
+|---|:---:|:---|
+| 💬 Message to a background job | ❌ splits the chat | ✅ delivered into the job (`claude attach`) |
+| ➕ New chat from the web | ⚠️ hidden from `claude agents` | ✅ starts as a daemon job |
+| 🖥️ Chat open in a terminal | ❌ makes a copy | ✅ refused, with a message |
+| ⌨️ Shell tab on a job | ⚠️ `claude --resume` | ✅ `claude attach` |
+| 🏷️ Chat names | ⚠️ first prompt only | ✅ synced with Claude Code, both ways |
+| 🗑️ Job removed in Claude Code | ❌ stays on the web | ✅ archived |
+| 🚦 Job state (working, waiting, done) | ❌ | ✅ with Terminal and Stop buttons |
+| 💡 Suggested next prompt | ❌ | ✅ |
+| 📁 Move a chat to another project | ❌ | ✅ |
+| 🔔 Push notifications | ❌ | ✅ when a job finishes, fails or waits for you |
+| 🔒 Login attempts | ⚠️ unlimited | ✅ 5 per 15 min per IP |
 
 ```mermaid
 flowchart LR
@@ -63,28 +63,31 @@ daemon and its jobs.
 
 ## Install
 
-Tether **links to the Claude Code you already use**; it never installs a new one. Claude Code
-must be installed and logged in, and have at least one chat.
+Tether **links to the Claude Code you already use**; it never installs a new one.
 
-**From the Proxmox VE host** (recommended):
+Inside the container (or VM) where Claude Code runs, as root:
 
 ```sh
+claude          # log in once, if you have not yet
 wget -qO- https://raw.githubusercontent.com/dllfpp/tether/main/get.sh | sh
 ```
 
-(or `curl -fsSL https://raw.githubusercontent.com/dllfpp/tether/main/get.sh | sh`). It clones the
-repository in `/opt/tether-src` and starts the wizard, which lists the running containers that use Claude Code, with their users and number of
-projects:
+Without `wget`: `curl -fsSL https://raw.githubusercontent.com/dllfpp/tether/main/get.sh | sh`.
+
+Tested on a fresh Alpine 3.24 LXC on Proxmox VE with Claude Code 2.1.303: from the one-liner to
+a running Tether in about 2.5 minutes. Then open `http://<container-ip>:3010` and create the
+admin account.
+
+**From the Proxmox VE host.** Run the same one-liner on the host: the wizard lists the running
+containers that use Claude Code and installs Tether in the one you pick.
 
 ```
-  1) CT 111  claudecode  users: root (24 projects)
-  2) CT 121  dev-box     users: dev (3 projects)
+  1) CT 201  claude      users: root (24 projects)
+  2) CT 202  dev-box     users: dev (3 projects)
 Link Tether to which Claude Code? [1-2]:
 ```
 
-It copies Tether into the chosen container (`/opt/tether-src`) and continues there. You can also
-run the same commands **inside** the container or VM where Claude Code runs.
-
+The one-liner clones the repository in `/opt/tether-src` and starts the wizard (`install.sh`).
 Then it asks:
 
 | Question | Default |
@@ -100,7 +103,7 @@ Then it asks:
 
 It installs the missing packages (Node.js, build tools), builds the app (on Alpine it also
 rebuilds `node-pty` for musl), installs the `tether` service (OpenRC or systemd) and waits until
-it answers. Open `http://<container>:3010` and create the admin account: the first visit only.
+it answers.
 
 Answers are saved in `/etc/tether/install.conf`, the token in `/etc/tether/oauth-token`
 (mode 600, never in the repository).
