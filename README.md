@@ -74,9 +74,11 @@ wget -qO- https://raw.githubusercontent.com/dllfpp/tether/main/get.sh | sh
 
 Without `wget`: `curl -fsSL https://raw.githubusercontent.com/dllfpp/tether/main/get.sh | sh`.
 
-Tested on a fresh Alpine 3.24 LXC on Proxmox VE with Claude Code 2.1.303: from the one-liner to
-a running Tether in about 2.5 minutes. Then open `http://<container-ip>:3010` and create the
-admin account.
+Then open `http://<container-ip>:3010` and create the admin account.
+
+**Tested environment:** Proxmox VE 9.2.21, Alpine 3.24 LXC (OpenRC, x86_64), Claude Code 2.1.303;
+from the one-liner to a running Tether in about 2.5 minutes. On anything else (Debian, a VM,
+another Claude Code version...) the wizard shows what differs and asks before changing anything.
 
 **From the Proxmox VE host.** Run the same one-liner on the host: the wizard lists the running
 containers that use Claude Code and installs Tether in the one you pick.
