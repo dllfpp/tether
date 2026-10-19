@@ -11,6 +11,10 @@ by DLLFPP. It is not the original software and it is not endorsed by Siteboon; t
 name and icon differ. Base: CloudCLI UI `v1.37.5`. License: AGPL-3.0 (see [LICENSE](LICENSE)
 and [NOTICE](NOTICE)).
 
+<p align="center">
+  <img src="docs/images/tether-ui.png" width="1440" height="900" alt="Tether: projects and chats of Claude Code in the sidebar, a conversation on the right">
+</p>
+
 > [!IMPORTANT]
 > This section covers the fork only. The original CloudCLI README follows, unmodified, after
 > the separator.
