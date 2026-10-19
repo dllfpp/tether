@@ -35,6 +35,8 @@ the single source of truth: web and terminal always show the same chats, names a
 | 🏷️ Chat names | ⚠️ first prompt only | ✅ synced with Claude Code, both ways |
 | 🗑️ Job removed in Claude Code | ❌ stays on the web | ✅ archived |
 | 🚦 Job state (working, waiting, done) | ❌ | ✅ with Terminal and Stop buttons |
+| 📨 Messages queued while Claude works | ⚠️ one only, a second replaces it | ✅ a real queue, one per turn, kept even if the job restarts |
+| ↕️ Reorder the queue | ❌ | ✅ drag (also on a phone) or arrow keys; edit, send now or remove each one |
 | 💡 Suggested next prompt | ❌ | ✅ |
 | 📁 Move a chat to another project | ❌ | ✅ |
 | 🔔 Push notifications | ❌ | ✅ when a job finishes, fails or waits for you |
