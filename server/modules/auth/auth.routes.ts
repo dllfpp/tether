@@ -13,7 +13,7 @@ function sessionUser(req: express.Request): { id: number; username: string } {
 }
 
 /**
- * CloudCLI live: where passkeys are bound. WEBAUTHN_ORIGIN pins it (for
+ * Tether: where passkeys are bound. WEBAUTHN_ORIGIN pins it (for
  * example https://tether.example); without it the page's own Origin is used.
  * The browser itself refuses a passkey of another site, so the Origin header
  * cannot borrow one.

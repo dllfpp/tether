@@ -38,6 +38,8 @@ the single source of truth: web and terminal always show the same chats, names a
 | 💡 Suggested next prompt | ❌ | ✅ |
 | 📁 Move a chat to another project | ❌ | ✅ |
 | 🔔 Push notifications | ❌ | ✅ when a job finishes, fails or waits for you |
+| 🔑 Passkeys (Face ID, Touch ID, Windows Hello, security keys) | ❌ | ✅ sign in without a password |
+| 📱 Authenticator app (TOTP) + recovery codes | ❌ | ✅ password plus a 6-digit code |
 | 🔒 Login attempts | ⚠️ unlimited | ✅ 5 per 15 min per IP |
 
 ```mermaid
@@ -136,6 +138,31 @@ Add them to `<install dir>/.env`; the wizard keeps lines it does not manage.
 | `LIVE_NEW_CHATS_AS_JOBS=0` | new chats from the web use the original Agent SDK instead of daemon jobs |
 | `LIVE_HIDDEN_PATHS` | comma-separated project folders to hide from the sidebar |
 | `TRUST_PROXY` | IP of the reverse proxy in front of Tether |
+
+## Sign-in security
+
+The original CloudCLI signs in with a password only. Tether adds, in **Settings › Security**:
+
+- **Passkeys** (WebAuthn): Face ID, Touch ID, Windows Hello, a phone or a security key. A passkey
+  signs in on its own, no password needed. Add one per device.
+- **Authenticator app** (TOTP: Google Authenticator, 1Password, Bitwarden, Aegis...): after the
+  password, Tether asks for the 6-digit code. Turning it on also gives you **10 one-time recovery
+  codes**: keep them somewhere safe.
+
+Passkeys need HTTPS (browsers allow them only on a secure origin, or `localhost`). They are bound
+to the host name you open Tether with; behind a reverse proxy you can pin it in `.env`:
+
+| Variable | Effect |
+|---|---|
+| `WEBAUTHN_ORIGIN` | the exact address of the page, e.g. `https://tether.example.com` |
+| `WEBAUTHN_RP_ID` | the host name passkeys belong to, e.g. `tether.example.com` |
+
+**Locked out** (lost phone and recovery codes)? Root on the server is the proof of identity:
+
+```sh
+node /opt/tether/deploy/reset-mfa.mjs              # turn the authenticator off: password alone again
+node /opt/tether/deploy/reset-mfa.mjs --passkeys   # also delete every passkey
+```
 
 ## Remote access
 
