@@ -2,8 +2,9 @@ import { useCallback, useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { startRegistration } from '@simplewebauthn/browser';
-import { Fingerprint, KeyRound, Loader2, Smartphone, Trash2 } from 'lucide-react';
+import { Fingerprint, KeyRound, Loader2, LogOut, Smartphone, Trash2 } from 'lucide-react';
 
+import { useAuth } from '@/modules/auth';
 import SettingsCard from '@/modules/settings/SettingsCard';
 import SettingsSection from '@/modules/settings/SettingsSection';
 import { api, readApiErrorMessage } from '@/shared/api';
@@ -38,6 +39,7 @@ async function readError(response: Response): Promise<string> {
 /** Rendered by Settings for the "security" tab: passkeys, authenticator app and recovery codes. */
 export default function SecuritySettingsTab() {
   const { t, i18n } = useTranslation('auth');
+  const { logout } = useAuth();
   const [factors, setFactors] = useState<Factors | null>(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -302,6 +304,13 @@ export default function SecuritySettingsTab() {
           </SettingsSection>
         </>
       )}
+
+      <SettingsSection title={t('security.session')} description={t('security.sessionHint')}>
+        <button type="button" onClick={logout} className={secondaryButtonClassName}>
+          <LogOut className="h-4 w-4" />
+          {t('security.logout')}
+        </button>
+      </SettingsSection>
     </div>
   );
 }

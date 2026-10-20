@@ -8,14 +8,6 @@ import type { ReleaseInfo } from '@/shared/types';
 // CloudCLI live: issues go to Tether's own (private) repository.
 const GITHUB_ISSUES_URL = 'https://github.com/dllfpp/tether/issues/new';
 
-// CloudCLI live: the running build, from the hashed entry script's name. The
-// version number stays the same between releases; this tells two builds apart
-// (and shows the app updated itself).
-const BUILD_ID = typeof document === 'undefined'
-  ? ''
-  : document.querySelector<HTMLScriptElement>('script[type="module"][src*="/assets/index-"]')
-    ?.getAttribute('src')?.match(/index-([^.]+)\.js/)?.[1] ?? '';
-
 type SidebarFooterProps = {
   updateAvailable: boolean;
   restartRequired: boolean;
@@ -141,7 +133,7 @@ export default function SidebarFooter({
             rel="noopener noreferrer"
             className="text-[10px] text-muted-foreground/40 transition-colors hover:text-muted-foreground"
           >
-            {APP_NAME} v{currentVersion}{BUILD_ID && ` (${BUILD_ID})`} · based on {UPSTREAM_NAME}
+            {APP_NAME} v{currentVersion} · based on {UPSTREAM_NAME}
           </a>
         </div>
       )}
@@ -184,7 +176,7 @@ export default function SidebarFooter({
             rel="noopener noreferrer"
             className="text-[11px] text-muted-foreground/60 transition-colors hover:text-muted-foreground"
           >
-            {APP_NAME} v{currentVersion}{BUILD_ID && ` (${BUILD_ID})`} · based on {UPSTREAM_NAME}
+            {APP_NAME} v{currentVersion} · based on {UPSTREAM_NAME}
           </a>
         </div>
       )}
