@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 
+import { noteJobState } from '@/modules/project-workspace/utils/jobDoneChime';
+
 import { api } from '@/shared/api';
 import type { ServerEvent,
   AppTab,
@@ -869,6 +871,9 @@ export function useProjectsState({
         }
         return mergeProjectSelectionMetadata(previousProject, upsert.project);
       });
+
+      // CloudCLI live: a bell when any chat's job finishes working.
+      noteJobState(upsert.sessionId, upsert.session.live?.state);
 
       // CloudCLI live: the job bar above the chat reads the selected session,
       // so its status and status line follow the job as it changes.

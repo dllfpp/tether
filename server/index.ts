@@ -24,6 +24,7 @@ import {
     prefetchSuggestions,
     refreshAllClaudeSessionNames,
     startJobNotifications,
+    startSessionIcons,
     syncJobNamesToDb,
 } from '@/modules/live-sessions/index.js';
 
@@ -406,6 +407,7 @@ async function startServer() {
             });
             liveSessionsService.start();
             startJobNotifications();
+            startSessionIcons((renamed) => void broadcastSessionUpsertedBatch(renamed));
             // Once the job names are known, bring every stored name in line
             // with Claude Code, including conversations untouched for weeks.
             void liveSessionsService.refresh()

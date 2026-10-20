@@ -13,6 +13,8 @@ export { archiveDeletedJobSessions, removeClaudeJobForSession } from './services
 export { prefetchSuggestions } from './services/prompt-suggestion.service.js';
 export { isLiveForkInstall } from './services/fork-install.service.js';
 export { startJobNotifications } from './services/job-notifications.service.js';
+// startSessionIcons: used by server startup to put a topic icon at the start of conversation names.
+export { startSessionIcons } from './services/session-icons.service.js';
 export { markSessionSeen } from './services/session-seen.service.js';
 export { default as liveSessionsRoutes } from './live-sessions.routes.js';
 export { loginRateLimit } from './login-rate-limit.middleware.js';
