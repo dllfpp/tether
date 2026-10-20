@@ -3,7 +3,7 @@ import path from 'node:path';
 import type { WebSocket } from 'ws';
 
 import { sessionsDb } from '@/modules/database/index.js';
-import { deliverToJob, markSessionSeen, resolveLiveRoute, startJobFromAgentView } from '@/modules/live-sessions/index.js';
+import { deliverToJob, liveSessionsService, markSessionSeen, resolveLiveRoute, startJobFromAgentView } from '@/modules/live-sessions/index.js';
 import { providerModelsService, sessionsService } from '@/modules/providers/index.js';
 import { chatRunRegistry } from '@/modules/websocket/services/chat-run-registry.service.js';
 import { broadcastSessionUpserted } from '@/modules/websocket/services/session-upsert-broadcast.service.js';
@@ -849,7 +849,12 @@ export function handleChatConnection(
           // CloudCLI live: the conversation is open and on screen in this
           // client; job notifications skip what the user has already seen.
           if (typeof data.sessionId === 'string' && data.sessionId.length <= 200) {
-            markSessionSeen(data.sessionId);
+            const row = sessionsDb.getSessionById(data.sessionId);
+            const live = row ? liveSessionsService.get(row.provider_session_id ?? row.session_id) : null;
+            // A reply just read: every client drops its unread glow.
+            if (markSessionSeen(data.sessionId, Date.now(), live)) {
+              void broadcastSessionUpserted(data.sessionId);
+            }
           }
           return;
         case 'ping':

@@ -115,6 +115,15 @@ const isTouchKeyboard = () =>
   typeof window !== 'undefined' && !(window.matchMedia?.('(any-pointer: fine)').matches ?? true);
 
 const MAX_ATTACHMENT_COUNT = 10;
+// CloudCLI live: what the phone's file picker offers (see useDropzone below).
+const TOUCH_PICKER_ACCEPT = {
+  'image/*': [],
+  'video/*': [],
+  'application/pdf': [],
+  'text/*': [],
+  'application/json': [],
+  'application/zip': [],
+};
 const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
 // CloudCLI live: phone screen recordings easily exceed 10MB.
 const MAX_VIDEO_ATTACHMENT_SIZE = 200 * 1024 * 1024;
@@ -703,6 +712,10 @@ export function useChatComposerState({
     // Sizes are checked in handleAttachmentFiles, which reports what it skips;
     // a dropzone maxSize would drop large files without a word.
     maxFiles: MAX_ATTACHMENT_COUNT,
+    // CloudCLI live: on a phone the picker gets explicit types. Without
+    // `accept`, iOS's photo library let several photos be picked but the
+    // confirm button did nothing; with them it opens its native photo picker.
+    accept: isTouchKeyboard() ? TOUCH_PICKER_ACCEPT : undefined,
     onDrop: handleAttachmentFiles,
     noClick: true,
     noKeyboard: true,

@@ -115,6 +115,10 @@ export type ProjectSession = {
   live?: LiveSessionInfo | null;
   /** CloudCLI live: pinned to the top of its project's conversation list. */
   pinned?: boolean;
+  /** CloudCLI live: order among the pinned ones, higher first; 0 when not pinned. */
+  pinRank?: number;
+  /** CloudCLI live: the job ended its turn after the conversation was last on screen. */
+  unread?: boolean;
   // Tags the session with the owning project's DB `projectId` so UI handlers
   // (session switching, sidebar focus, etc.) can match against selectedProject.
   __projectId?: string;

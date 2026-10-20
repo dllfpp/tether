@@ -92,6 +92,12 @@ export const createSessionViewModel = (
  */
 const sortedSessionsByProject = new WeakMap<Project, SessionWithProvider[]>();
 
+/** CloudCLI live: pinned before unpinned, then by the pinned rank (higher first). */
+const pinOrder = (a: { pinned?: boolean; pinRank?: number }, b: { pinned?: boolean; pinRank?: number }): number => (
+  (Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)))
+  || ((b.pinRank ?? 0) - (a.pinRank ?? 0))
+);
+
 export const getAllSessions = (project: Project): SessionWithProvider[] => {
   const cached = sortedSessionsByProject.get(project);
   if (cached) {
@@ -102,9 +108,9 @@ export const getAllSessions = (project: Project): SessionWithProvider[] => {
     ...session,
     __provider: getSessionProvider(session),
   })).sort(
-    // CloudCLI live: pinned conversations first, each group most recent first.
-    (a, b) => (Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)))
-      || getSessionDate(b).getTime() - getSessionDate(a).getTime(),
+    // CloudCLI live: pinned conversations first, in the order the reader set;
+    // the rest most recent first.
+    (a, b) => pinOrder(a, b) || getSessionDate(b).getTime() - getSessionDate(a).getTime(),
   );
 
   sortedSessionsByProject.set(project, sessions);
@@ -132,7 +138,7 @@ export const getSortedSessions = (project: Project, order: ProjectSortOrder): Se
   if (cached) {
     return cached;
   }
-  const byName = [...byDate].sort((a, b) => (Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)))
+  const byName = [...byDate].sort((a, b) => pinOrder(a, b)
     || getSessionLabel(a).localeCompare(getSessionLabel(b), undefined, { sensitivity: 'base' }));
   sessionsSortedByName.set(project, byName);
   return byName;

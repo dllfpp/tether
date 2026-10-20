@@ -1152,3 +1152,17 @@
     }
   }
 }
+
+/* CloudCLI live: a conversation whose reply is not read yet glows like its
+   state dot: green when done, amber when it waits for the user. */
+@keyframes tether-unread-glow {
+  0%, 100% { box-shadow: 0 0 0 1px rgb(var(--tether-glow) / 0.55), 0 0 6px 0 rgb(var(--tether-glow) / 0.25); }
+  50% { box-shadow: 0 0 0 1px rgb(var(--tether-glow) / 0.9), 0 0 14px 2px rgb(var(--tether-glow) / 0.45); }
+}
+/* On the row's card itself: the wrapper is wider than the card (phone inset). */
+.tether-unread-glow [data-session-card] { animation: tether-unread-glow 2s ease-in-out infinite; }
+.tether-unread-glow-done { --tether-glow: 34 197 94; }
+.tether-unread-glow-waiting { --tether-glow: 245 158 11; }
+@media (prefers-reduced-motion: reduce) {
+  .tether-unread-glow [data-session-card] { animation: none; box-shadow: 0 0 0 1px rgb(var(--tether-glow) / 0.8); }
+}

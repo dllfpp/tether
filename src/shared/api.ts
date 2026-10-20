@@ -328,6 +328,9 @@ export const api = {
   renameSession: (sessionId: string, summary: string) =>
     put(`/api/providers/sessions/${sessionId}`, { summary }),
   // CloudCLI live: pin a conversation to the top of its project's list.
+  // CloudCLI live: order of the pinned conversations, top first.
+  setPinnedOrder: (sessionIds: string[]) =>
+    put('/api/providers/sessions/pin-order', { sessionIds }),
   setSessionPinned: (sessionId: string, pinned: boolean) =>
     put(`/api/providers/sessions/${encodeURIComponent(sessionId)}/pin`, { pinned }),
   // What one agent of a workflow run did, read from its transcript on demand

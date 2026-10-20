@@ -1,7 +1,7 @@
 import path from 'node:path';
 
 import { projectsDb, sessionsDb } from '@/modules/database/index.js';
-import { isHiddenProjectPath, liveSessionsService } from '@/modules/live-sessions/index.js';
+import { isHiddenProjectPath, isSessionUnread, liveSessionsService } from '@/modules/live-sessions/index.js';
 import { generateDisplayName } from '@/modules/projects/index.js';
 import { connectedClients, WS_OPEN_STATE } from '@/modules/websocket/services/websocket-state.service.js';
 import type { SessionUpsertedEvent } from '@/shared/types.js';
@@ -52,6 +52,9 @@ async function buildSessionUpsertedEvent(
       lastActivity: row.updated_at ?? row.created_at ?? new Date().toISOString(),
       live: row.provider === 'claude' ? liveSessionsService.get(row.provider_session_id ?? row.session_id) : null,
       pinned: Boolean(row.isPinned),
+      pinRank: Number(row.isPinned) || 0,
+      unread: row.provider === 'claude'
+        && isSessionUnread(row.session_id, liveSessionsService.get(row.provider_session_id ?? row.session_id)),
     },
     project: project
       ? {

@@ -962,6 +962,21 @@ router.post(
   }),
 );
 
+// CloudCLI live: order of the pinned conversations (body `{ sessionIds: string[] }`, top first).
+router.put(
+  '/sessions/pin-order',
+  asyncHandler(async (req: Request, res: Response) => {
+    const sessionIds = (req.body as { sessionIds?: unknown } | undefined)?.sessionIds;
+    if (
+      !Array.isArray(sessionIds) || sessionIds.length > 200
+      || sessionIds.some((id) => typeof id !== 'string' || !id || id.length > 200)
+    ) {
+      throw new AppError('sessionIds must be a list of session ids.', { code: 'INVALID_REQUEST_BODY', statusCode: 400 });
+    }
+    res.json(createApiSuccessResponse(sessionsService.setPinnedOrder(sessionIds as string[])));
+  }),
+);
+
 // CloudCLI live: pin or unpin a conversation (body `{ pinned: boolean }`).
 router.put(
   '/sessions/:sessionId/pin',

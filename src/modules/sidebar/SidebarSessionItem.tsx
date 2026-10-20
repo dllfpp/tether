@@ -181,6 +181,7 @@ function SidebarSessionItem({
           aria-checked={isSelecting ? isChecked : undefined}
           aria-disabled={isSelecting && !isSelectable ? true : undefined}
           tabIndex={isSelecting ? 0 : undefined}
+          data-session-card
           className={cn(
             'p-2 mx-3 my-0.5 rounded-md bg-card border active:scale-[0.98] transition-all duration-150 relative',
             isSelected ? 'bg-primary/5 border-primary/20' : '',
@@ -429,6 +430,7 @@ function SidebarSessionItem({
       <div>
         <a
           href={`/session/${session.id}`}
+          data-session-card
           role={isSelecting ? 'checkbox' : undefined}
           aria-checked={isSelecting ? isChecked : undefined}
           aria-disabled={isSelecting && !isSelectable ? true : undefined}

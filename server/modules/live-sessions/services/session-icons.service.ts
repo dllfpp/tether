@@ -1,3 +1,7 @@
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+
 import { sessionsDb } from '@/modules/database/index.js';
 import { resolveLiveRoute } from '@/modules/live-sessions/services/live-routing.service.js';
 import { renameClaudeSession } from '@/modules/live-sessions/services/claude-session-names.service.js';
@@ -54,6 +58,32 @@ export function hasLeadingIcon(name: string): boolean {
   return LEADING_ICON.test(name.trim());
 }
 
+const SAFE_JOB_ID = /^[A-Za-z0-9_-]{4,64}$/;
+
+/**
+ * Renames a stopped daemon job in its own state.json (what `/rename` writes:
+ * `name` plus `nameSource: user`). `updatedAt` is left alone, so the job does
+ * not look freshly changed. False when the file is missing, or holds another
+ * name than the one expected (it changed meanwhile).
+ */
+async function renameStoppedJob(jobId: string, expectedName: string, nextName: string): Promise<boolean> {
+  if (!SAFE_JOB_ID.test(jobId)) return false;
+  const stateFile = path.join(os.homedir(), '.claude', 'jobs', jobId, 'state.json');
+  let state: Record<string, unknown>;
+  try {
+    state = JSON.parse(await fs.readFile(stateFile, 'utf8')) as Record<string, unknown>;
+  } catch {
+    return false;
+  }
+  if (typeof state.name !== 'string' || state.name.trim() !== expectedName) return false;
+  state.name = nextName;
+  state.nameSource = 'user';
+  const temporary = `${stateFile}.tether-icon`;
+  await fs.writeFile(temporary, JSON.stringify(state, null, 2));
+  await fs.rename(temporary, stateFile);
+  return true;
+}
+
 // Conversations that matched no rule or failed once: not retried until restart.
 const settled = new Set<string>();
 let running = false;
@@ -83,11 +113,24 @@ async function tick(onRenamed: (providerSessionIds: string[]) => void): Promise<
       // A terminal session cannot be renamed from here; try again later.
       if (route.mode === 'interactive') continue;
       if (route.mode === 'job') {
-        // Attaching to a stopped job restarts it: old jobs keep their name
-        // rather than all waking up at once.
+        // Attaching to a stopped job would restart it: its name is written
+        // straight into the job's state.json instead, as `/rename` would.
         const live = liveSessionsService.get(providerSessionId);
         if (!live?.alive) {
-          settled.add(row.session_id);
+          if (fileRenames >= MAX_FILE_RENAMES_PER_TICK) continue;
+          fileRenames += 1;
+          const nextName = `${icon} ${name}`;
+          try {
+            if (await renameStoppedJob(route.jobId, name, nextName)) {
+              sessionsDb.updateSessionCustomName(row.session_id, nextName);
+              renamed.push(providerSessionId);
+            } else {
+              settled.add(row.session_id);
+            }
+          } catch (error) {
+            settled.add(row.session_id);
+            console.warn(`[live-sessions] icon for job "${name}" not set:`, error instanceof Error ? error.message : error);
+          }
           continue;
         }
         // Mid-turn, `/rename` would wait in the job's queue: rename between turns.

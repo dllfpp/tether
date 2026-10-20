@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 
 import { projectsDb, sessionsDb } from '@/modules/database/index.js';
-import { isHiddenProjectPath, liveSessionsService } from '@/modules/live-sessions/index.js';
+import { isHiddenProjectPath, isSessionUnread, liveSessionsService } from '@/modules/live-sessions/index.js';
 import { sessionSynchronizerService } from '@/modules/providers/index.js';
 import { WS_OPEN_STATE, connectedClients } from '@/modules/websocket/index.js';
 import type { LiveSessionInfo, RealtimeClientConnection } from '@/shared/types.js';
@@ -17,6 +17,10 @@ type SessionSummary = {
   live?: LiveSessionInfo | null;
   /** CloudCLI live: pinned to the top of its project's list. */
   pinned: boolean;
+  /** CloudCLI live: order among the pinned ones, higher first; 0 when not pinned. */
+  pinRank: number;
+  /** CloudCLI live: the job ended its turn after the conversation was last on screen. */
+  unread: boolean;
 };
 
 type SessionRepositoryRow = {
@@ -132,6 +136,9 @@ function mapSessionRowToSummary(row: SessionRepositoryRow): SessionSummary {
     lastActivity: row.updated_at ?? row.created_at ?? new Date().toISOString(),
     live: row.provider === 'claude' ? liveSessionsService.get(row.provider_session_id ?? row.session_id) : null,
     pinned: Boolean(row.isPinned),
+    pinRank: Number(row.isPinned) || 0,
+    unread: row.provider === 'claude'
+      && isSessionUnread(row.session_id, liveSessionsService.get(row.provider_session_id ?? row.session_id)),
   };
 }
 

@@ -792,4 +792,12 @@ export const sessionsService = {
     void broadcastSessionUpserted(sessionId);
     return { sessionId, pinned };
   },
+
+  /** CloudCLI live: reorders the pinned conversations (top first) and tells every client. */
+  setPinnedOrder(sessionIds: string[]): { sessionIds: string[] } {
+    for (const sessionId of sessionsDb.setPinnedOrder(sessionIds)) {
+      void broadcastSessionUpserted(sessionId);
+    }
+    return { sessionIds };
+  },
 };

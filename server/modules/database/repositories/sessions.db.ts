@@ -16,7 +16,7 @@ type SessionRow = {
   /** The app session this one was branched from; NULL unless it is a fork. */
   forked_from_session_id: string | null;
   isArchived: number;
-  /** CloudCLI live: 1 when pinned to the top of its project's list. */
+  /** CloudCLI live: 0 when not pinned; otherwise its rank among the pinned ones, higher first. */
   isPinned: number;
   created_at: string;
   updated_at: string;
@@ -691,14 +691,41 @@ export const sessionsDb = {
    * Soft-delete and restore both use the same flag update so callers keep the
    * row, metadata, and file path intact while toggling visibility.
    */
-  /** CloudCLI live: pins a conversation to the top of its project's list, or unpins it. */
+  /**
+   * CloudCLI live: pins a conversation to the top of its project's list (above
+   * the ones already pinned), or unpins it. `isPinned` is the rank.
+   */
   updateSessionIsPinned(sessionId: string, isPinned: boolean): void {
     const db = getConnection();
+    if (!isPinned) {
+      db.prepare('UPDATE sessions SET isPinned = 0 WHERE session_id = ?').run(sessionId);
+      return;
+    }
     db.prepare(
       `UPDATE sessions
-       SET isPinned = ?
+       SET isPinned = (
+         SELECT COALESCE(MAX(other.isPinned), 0) + 1 FROM sessions AS other
+         WHERE other.project_path IS (SELECT project_path FROM sessions WHERE session_id = ?)
+       )
        WHERE session_id = ?`
-    ).run(isPinned ? 1 : 0, sessionId);
+    ).run(sessionId, sessionId);
+  },
+
+  /**
+   * CloudCLI live: puts pinned conversations in the order given (top first).
+   * Ids that are not pinned are ignored; returns the ids that changed.
+   */
+  setPinnedOrder(sessionIds: string[]): string[] {
+    const db = getConnection();
+    const changed: string[] = [];
+    const update = db.prepare('UPDATE sessions SET isPinned = ? WHERE session_id = ? AND isPinned > 0 AND isPinned != ?');
+    db.transaction(() => {
+      sessionIds.forEach((sessionId, index) => {
+        const rank = sessionIds.length - index;
+        if (update.run(rank, sessionId, rank).changes > 0) changed.push(sessionId);
+      });
+    })();
+    return changed;
   },
 
   updateSessionIsArchived(sessionId: string, isArchived: boolean): void {

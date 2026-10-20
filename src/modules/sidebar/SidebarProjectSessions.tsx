@@ -6,6 +6,7 @@ import { cn } from '@/shared/utils';
 import type { LLMProvider, Project, ProjectSession, SessionWithProvider, SidebarSessionSelection } from '@/shared/types';
 import SidebarSessionItem from '@/modules/sidebar/SidebarSessionItem';
 import { useCompactSidebar } from '@/modules/sidebar/hooks/useCompactSidebar';
+import { usePinnedReorder } from '@/modules/sidebar/hooks/usePinnedReorder';
 
 type SidebarProjectSessionsProps = {
   project: Project;
@@ -91,6 +92,7 @@ export default function SidebarProjectSessions({
   onDeleteSelectedSessions,
   t,
 }: SidebarProjectSessionsProps) {
+  const pinnedReorder = usePinnedReorder(sessions);
   const isCompact = useCompactSidebar();
 
   if (!isExpanded) {
@@ -218,9 +220,32 @@ export default function SidebarProjectSessions({
         </div>
       ) : (
         <>
-          {sessions.map((session) => (
-            <SidebarSessionItem
+          {pinnedReorder.ordered.map((session) => {
+            const offset = pinnedReorder.offsetFor(session.id);
+            const isDragging = pinnedReorder.draggingId === session.id;
+            // CloudCLI live: a reply not read yet glows in the color of the state.
+            const unreadTone = session.unread
+              ? ((session.live?.state ?? '').toLowerCase() === 'done' ? 'done' : 'waiting')
+              : null;
+            return (
+            <div
               key={session.id}
+              ref={pinnedReorder.rowRef(session.id)}
+              {...(isSelecting ? {} : pinnedReorder.rowProps(session.id))}
+              className={cn(
+                // Room for the unread glow before the scrollbar (the phone card is inset already).
+                'rounded-lg md:pr-2',
+                unreadTone && 'tether-unread-glow',
+                unreadTone === 'done' && 'tether-unread-glow-done',
+                unreadTone === 'waiting' && 'tether-unread-glow-waiting',
+                isDragging && 'relative z-10 cursor-grabbing select-none opacity-95 shadow-lg',
+              )}
+              style={{
+                transform: offset ? `translateY(${offset}px)` : undefined,
+                transition: isDragging ? 'none' : 'transform 150ms ease',
+              }}
+            >
+            <SidebarSessionItem
               project={project}
               session={session}
               selectedSession={selectedSession}
@@ -243,7 +268,9 @@ export default function SidebarProjectSessions({
               onToggleSessionSelected={onToggleSessionSelected}
               t={t}
             />
-          ))}
+            </div>
+            );
+          })}
 
           {hasMoreSessions && (
             <Button
