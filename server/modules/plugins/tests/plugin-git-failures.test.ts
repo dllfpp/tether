@@ -16,6 +16,22 @@ import { AppError } from '@/shared/utils.js';
 
 const execFileAsync = promisify(execFile);
 
+/**
+ * The private-host test serves a real repository with `git http-backend`,
+ * which some git packages leave out (Alpine ships it in `git-daemon`). Without
+ * it there is no host to clone from, so that test is skipped, not failed.
+ */
+function missingGitHttpBackend(): string | false {
+  try {
+    const execPath = execFileSync('git', ['--exec-path'], { encoding: 'utf8' }).trim();
+    return fs.existsSync(path.join(execPath, 'git-http-backend'))
+      ? false
+      : 'git http-backend is not installed (on Alpine: apk add git-daemon)';
+  } catch {
+    return 'git is not available';
+  }
+}
+
 // The registry resolves ~/.claude-code-ui/plugins when it is imported, so HOME
 // has to point at a fixture first. Git must not borrow credentials from the
 // developer's setup either: GIT_CONFIG_GLOBAL points at a file each test
@@ -201,7 +217,7 @@ test('an install from a host nothing answers on fails as PLUGIN_GIT_HOST_UNREACH
   assert.deepEqual(await leftoverTempDirectories(), []);
 });
 
-test('a credential helper of the server user still installs a private plugin; without it the update explains why it failed', { timeout: 60_000 }, async () => {
+test('a credential helper of the server user still installs a private plugin; without it the update explains why it failed', { timeout: 60_000, skip: missingGitHttpBackend() }, async () => {
   const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'plugin-git-host-'));
   try {
     const seed = path.join(projectRoot, 'seed');
