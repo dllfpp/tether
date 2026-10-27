@@ -20,8 +20,31 @@ function withRecordedAnswers(toolName: unknown, input: unknown, toolUseResult: u
   return answers && typeof answers === 'object' ? { ...input, answers } : input;
 }
 
+/**
+ * CloudCLI live: a tool result made of content blocks (MCP tools) keeps its
+ * text and drops the base64 image data. An 80 KB single-line base64 string
+ * shown as text froze the chat on iPhone.
+ */
+function withoutImageData(content: unknown): unknown {
+  let blocks = content;
+  if (typeof content === 'string' && content.startsWith('[') && content.includes('"type":"image"')) {
+    try {
+      blocks = JSON.parse(content);
+    } catch {
+      return content;
+    }
+  }
+  if (!Array.isArray(blocks) || !blocks.some((block) => block?.type === 'image')) return content;
+  return blocks
+    .map((block) => (block?.type === 'image'
+      ? `[image ${block?.source?.media_type ?? ''}]`.replace(' ]', ']')
+      : typeof block?.text === 'string' ? block.text : JSON.stringify(block)))
+    .join('\n');
+}
+
 function formatToolResultContent(content: unknown): string {
-  const text = typeof content === 'string' ? content : JSON.stringify(content);
+  const clean = withoutImageData(content);
+  const text = typeof clean === 'string' ? clean : JSON.stringify(clean);
   const toolUseErrorMatch = /^<tool_use_error>([\s\S]*)<\/tool_use_error>$/.exec(text.trim());
   return toolUseErrorMatch ? toolUseErrorMatch[1] : text;
 }

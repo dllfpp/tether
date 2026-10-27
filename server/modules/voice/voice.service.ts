@@ -11,6 +11,13 @@ type VoiceServiceDependencies = {
     baseUrl: string;
     apiKey: string;
     sttModel: string;
+    /**
+     * CloudCLI live: optional speech-to-text hints. `sttLanguage` (ISO code,
+     * e.g. "it") skips language detection; `sttPrompt` is sample text in that
+     * language, and Whisper follows its style, punctuation included.
+     */
+    sttLanguage?: string;
+    sttPrompt?: string;
     ttsModel: string;
     ttsVoice: string;
   };
@@ -101,10 +108,16 @@ function validateConfiguredBackend(config: ResolvedVoiceConfig): VoiceServiceRes
   return null;
 }
 
-function createTranscriptionFormData(audio: VoiceAudioUpload, sttModel: string): FormData {
+function createTranscriptionFormData(
+  audio: VoiceAudioUpload,
+  sttModel: string,
+  hints: { sttLanguage?: string; sttPrompt?: string } = {},
+): FormData {
   const formData = new FormData();
   formData.append('file', new Blob([audio.bytes], { type: audio.mimeType }), audio.fileName);
   formData.append('model', sttModel);
+  if (hints.sttLanguage) formData.append('language', hints.sttLanguage);
+  if (hints.sttPrompt) formData.append('prompt', hints.sttPrompt);
   return formData;
 }
 
@@ -130,7 +143,7 @@ export function createVoiceService(dependencies: VoiceServiceDependencies): Voic
           {
             method: 'POST',
             headers: authorizationHeader(config.apiKey),
-            body: createTranscriptionFormData(input.audio, config.sttModel),
+            body: createTranscriptionFormData(input.audio, config.sttModel, dependencies.defaults),
           },
         );
         const responseText = await response.text();

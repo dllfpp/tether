@@ -1,5 +1,5 @@
 import { DownloadIcon, FileArchiveIcon, FileCodeIcon, FileIcon, FileTextIcon } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { api } from '@/shared/api';
 import type { ChatAttachment } from '@/shared/types';
@@ -23,6 +23,51 @@ const getFileIcon = (file: ChatAttachment) => {
   if (/\.(js|jsx|ts|tsx|py|rb|go|rs|java|c|cpp|css|html|json|ya?ml)$/.test(name)) return FileCodeIcon;
   return FileIcon;
 };
+
+const AUDIO_FILE = /\.(m4a|mp3|wav|ogg|oga|opus|webm|aac)$/i;
+
+const isAudioFile = (file: ChatAttachment) => (
+  (file.mimeType || '').startsWith('audio/') || AUDIO_FILE.test(file.name || file.path || '')
+);
+
+/**
+ * CloudCLI live: a voice message (or any audio attachment) plays in place.
+ * The file is fetched with the session's credentials, so a plain src URL
+ * would not do.
+ */
+function ChatMessageAudio({ file }: { file: ChatAttachment }) {
+  const [url, setUrl] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    const storedName = file.path?.split(/[\\/]/).pop();
+    if (!storedName) return undefined;
+    let objectUrl: string | null = null;
+    let cancelled = false;
+    void api.assets.file(storedName)
+      .then(async (response) => {
+        if (!response.ok) throw new Error(String(response.status));
+        objectUrl = URL.createObjectURL(await response.blob());
+        if (!cancelled) setUrl(objectUrl);
+      })
+      .catch(() => { if (!cancelled) setFailed(true); });
+    return () => {
+      cancelled = true;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [file.path]);
+
+  if (failed) return <ChatMessageFile file={file} />;
+  return (
+    <div className="flex w-72 max-w-full items-center rounded-xl border border-border/50 bg-card px-2 py-1.5 shadow-sm">
+      {url ? (
+        <audio src={url} controls preload="metadata" className="h-9 w-full" aria-label={file.name || 'Voice message'} />
+      ) : (
+        <div className="h-9 w-full animate-pulse rounded-lg bg-muted" />
+      )}
+    </div>
+  );
+}
 
 function ChatMessageFile({ file }: { file: ChatAttachment }) {
   const [isDownloading, setIsDownloading] = useState(false);
@@ -87,7 +132,9 @@ export default function ChatMessageFiles({ files }: ChatMessageFilesProps) {
   return (
     <div className="flex max-w-full flex-wrap justify-end gap-2">
       {files.map((file, index) => (
-        <ChatMessageFile key={file.path || file.name || index} file={file} />
+        isAudioFile(file)
+          ? <ChatMessageAudio key={file.path || file.name || index} file={file} />
+          : <ChatMessageFile key={file.path || file.name || index} file={file} />
       ))}
     </div>
   );

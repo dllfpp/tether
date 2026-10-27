@@ -127,7 +127,8 @@ function sendProtocolError(
   ws: WebSocket,
   code: string,
   error: string,
-  sessionId?: string
+  sessionId?: string,
+  extra: AnyRecord = {}
 ): void {
   sendJson(ws, {
     kind: 'protocol_error',
@@ -135,7 +136,66 @@ function sendProtocolError(
     error,
     sessionId: sessionId ?? null,
     timestamp: new Date().toISOString(),
+    ...extra,
   });
+}
+
+/**
+ * CloudCLI live: client message ids of chat turns already taken, so a turn the
+ * browser sends again (no ack seen over a half-dead socket) is not delivered
+ * twice. Kept for 10 minutes, far longer than any client retry.
+ */
+const SEEN_CLIENT_MESSAGE_TTL_MS = 10 * 60 * 1000;
+const seenClientMessageIds = new Map<string, number>();
+
+/**
+ * Records a client message id. Returns false when it was already seen (a
+ * resend). Frames without a usable id are always accepted. @internal
+ */
+export function acceptClientMessageId(clientMessageId: string | null, now = Date.now()): boolean {
+  for (const [id, seenAt] of seenClientMessageIds) {
+    if (now - seenAt <= SEEN_CLIENT_MESSAGE_TTL_MS) break;
+    seenClientMessageIds.delete(id);
+  }
+  if (!clientMessageId) return true;
+  if (seenClientMessageIds.has(clientMessageId)) return false;
+  seenClientMessageIds.set(clientMessageId, now);
+  return true;
+}
+
+function readClientMessageId(data: AnyRecord): string | null {
+  const id = typeof data.clientMessageId === 'string' ? data.clientMessageId.trim() : '';
+  return id.length > 0 && id.length <= 100 ? id : null;
+}
+
+/** File names of a turn's attachments, for the log (never paths or text). @internal */
+export function attachmentNamesForLog(data: AnyRecord): string[] {
+  const options = (data.options ?? {}) as AnyRecord;
+  return normalizeAttachmentDescriptors([
+    ...normalizeAttachmentDescriptors(options.images),
+    ...normalizeAttachmentDescriptors(options.files),
+    ...normalizeAttachmentDescriptors(options.attachments),
+  ]).map((descriptor) => path.basename(descriptor.path));
+}
+
+/**
+ * Acknowledges a chat turn as soon as it arrives, logs it, and tells whether
+ * to handle it (false for a resend already taken). The ack carries the
+ * client's id; resends are acked again so the browser stops retrying.
+ */
+function takeChatTurn(ws: WebSocket, data: AnyRecord, frameName: string): boolean {
+  const clientMessageId = readClientMessageId(data);
+  const sessionId = readRequiredSessionId(data);
+  const accepted = acceptClientMessageId(clientMessageId);
+  const names = attachmentNamesForLog(data);
+  console.log(
+    `[Chat] ${frameName} session=${sessionId ?? '-'} client=${clientMessageId ?? '-'}`
+    + ` attachments=${names.length > 0 ? names.join(',') : '-'}${accepted ? '' : ' (duplicate, ignored)'}`,
+  );
+  if (clientMessageId) {
+    sendJson(ws, { kind: 'chat.ack', clientMessageId, sessionId, duplicate: !accepted });
+  }
+  return accepted;
 }
 
 function readRequiredSessionId(data: AnyRecord): string | null {
@@ -618,6 +678,8 @@ async function handleChatStopTask(
       'NO_SUCH_TASK',
       `Session "${sessionId}" has no running background task "${taskId}".`,
       sessionId,
+      // Names the task so the client can settle a chip whose end it missed.
+      { taskId },
     );
   }
 }
@@ -828,9 +890,11 @@ export function handleChatConnection(
 
       switch (messageType) {
         case 'chat.edit-send':
+          if (!takeChatTurn(ws, data, messageType)) return;
           await handleChatEditSend(ws, userId, data, dependencies);
           return;
         case 'chat.send':
+          if (!takeChatTurn(ws, data, messageType)) return;
           await handleChatSend(ws, userId, data, dependencies);
           return;
         case 'chat.abort':

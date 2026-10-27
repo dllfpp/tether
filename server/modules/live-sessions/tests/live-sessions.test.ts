@@ -223,6 +223,9 @@ test('a waking job is not taken for ready', async () => {
   const { isPromptDrawn } = await import('@/modules/live-sessions/services/live-inject.service.js');
   assert.equal(isPromptDrawn('Waking session d5bd31bb…\r\n\r\n  Attaching…\r\n'), false);
   assert.equal(isPromptDrawn('● OK\r\n────\r\n❯ \r\n⏵⏵ auto mode on · ← for agents'), true);
+  // A job with a background shell or agent shows another status bar.
+  assert.equal(isPromptDrawn('● OK\r\n────\r\n❯ \r\n⏵⏵ auto mode on · 1 shell · ↓ to manage'), true);
+  assert.equal(isPromptDrawn('● OK\r\n────\r\n❯ \r\n⏵⏵ auto mode on · ← 1 agent · 1 shell · ↓ to manage'), true);
   // History replayed while waking already shows past prompts with ❯.
   assert.equal(isPromptDrawn('Waking session…\r\n❯ yes, point the dashboard button\r\n● done'), false);
 });

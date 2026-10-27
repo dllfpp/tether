@@ -16,6 +16,7 @@ import path from 'node:path';
 import readline from 'node:readline';
 import { fileURLToPath } from 'node:url';
 
+import spawn from 'cross-spawn';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 
 import { parseFrontMatter } from '@/shared/frontmatter.js';
@@ -23,6 +24,7 @@ import type {
   AnyRecord,
   ApiSuccessShape,
   AppErrorOptions,
+  CliVersionProbe,
   NormalizedMessage,
   ProviderCurrentActiveModel,
   ProviderModelsDefinition,
@@ -1160,7 +1162,15 @@ export async function buildLookupMap(
         continue;
       }
 
-      const parsed = JSON.parse(trimmed) as Record<string, unknown>;
+      let parsed: Record<string, unknown>;
+      try {
+        parsed = JSON.parse(trimmed) as Record<string, unknown>;
+      } catch {
+        // A row can be half-written while the CLI is streaming into the file.
+        // Skip it rather than abandoning every later entry in the file.
+        continue;
+      }
+
       const key = parsed[keyField];
       const value = parsed[valueField];
 
@@ -1186,26 +1196,37 @@ export async function extractFirstValidJsonlData<T>(
   filePath: string,
   extractor: (parsedJson: unknown) => T | null | undefined
 ): Promise<T | null> {
-  try {
-    const fileStream = fs.createReadStream(filePath);
-    const lineReader = readline.createInterface({ input: fileStream, crlfDelay: Infinity });
+  const fileStream = fs.createReadStream(filePath);
+  const lineReader = readline.createInterface({ input: fileStream, crlfDelay: Infinity });
 
+  try {
     for await (const line of lineReader) {
       const trimmed = line.trim();
       if (!trimmed) {
         continue;
       }
 
-      const parsed = JSON.parse(trimmed);
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(trimmed);
+      } catch {
+        // A row can be half-written while the CLI is streaming into the file.
+        // Skip it rather than giving up before a later valid row.
+        continue;
+      }
+
       const extracted = extractor(parsed);
       if (extracted) {
-        lineReader.close();
-        fileStream.close();
         return extracted;
       }
     }
   } catch {
     // Ignore malformed or missing artifacts so full scans keep progressing.
+  } finally {
+    // Close on every exit (match, no match, or stream error) so a malformed
+    // artifact cannot leak the file descriptor across repeated watcher scans.
+    lineReader.close();
+    fileStream.close();
   }
 
   return null;
@@ -1315,6 +1336,57 @@ export const terminalTextStyles = {
   dim: (text: string): string =>
     `${ANSI_TERMINAL_STYLES.dim}${text}${ANSI_TERMINAL_STYLES.reset}`,
 };
+
+// ---------------------------
+//----------------- CLI VERSION PROBE UTILITIES ------------
+/**
+ * Pulls the version number out of what a CLI prints for `--version`.
+ *
+ * Each provider CLI wraps it differently: `2.1.295 (Claude Code)`,
+ * `codex-cli 0.156.1`, a bare `1.18.25` from OpenCode, and the date-based
+ * `2026.07.20-8cc9c0b` from cursor-agent. This returns the first
+ * `major.minor.patch` token with any `-prerelease` or `+build` suffix, or null
+ * when the text has none.
+ */
+function parseCliVersion(output: string): string | null {
+  const match = stripAnsiSequences(output).match(/\d+\.\d+\.\d+(?:[-+][0-9A-Za-z][0-9A-Za-z.+-]*)?/);
+  return match ? match[0] : null;
+}
+
+/**
+ * Runs `<command> --version` and reports whether the CLI is there and which
+ * version it is.
+ *
+ * cross-spawn's sync form does not throw for a command it cannot start; it
+ * returns `{ error }` (ENOENT, EACCES, ...). Checks that only caught
+ * exceptions therefore reported a missing CLI as installed. Any such error now
+ * means "not installed", except ETIMEDOUT: that `--version` did start and was
+ * only slow, so the CLI counts as installed with an unknown version.
+ *
+ * Synchronous on purpose: provider status checks already ran `--version` this
+ * way, and the 5 s timeout bounds the wait. Used by every provider's auth
+ * status (`installed` and `installedVersion`) and by the providers module's
+ * CLI update service (the version before and after an update).
+ */
+export function probeCliVersion(command: string, args: string[] = ['--version']): CliVersionProbe {
+  const result = spawn.sync(command, args, {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'ignore'],
+    timeout: 5000,
+    windowsHide: true,
+  });
+
+  if (result.error) {
+    const timedOut = (result.error as NodeJS.ErrnoException).code === 'ETIMEDOUT';
+    return { installed: timedOut, exitCode: null, version: null };
+  }
+
+  return {
+    installed: true,
+    exitCode: result.status,
+    version: result.status === 0 ? parseCliVersion(String(result.stdout ?? '')) : null,
+  };
+}
 
 // ---------------------------
 //----------------- RUNTIME PATH RESOLUTION UTILITIES ------------

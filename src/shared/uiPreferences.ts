@@ -14,6 +14,7 @@ export type UiPreferences = {
   showThinking: boolean;
   sendByCtrlEnter: boolean;
   sidebarVisible: boolean;
+  keepProjectsExpanded: boolean;
   voiceEnabled: boolean;
 };
 
@@ -28,7 +29,9 @@ const DEFAULTS: UiPreferences = {
   showThinking: true,
   sendByCtrlEnter: false,
   sidebarVisible: true,
-  voiceEnabled: false,
+  keepProjectsExpanded: false,
+  // CloudCLI live: on by default; the mic still shows only with a transcription backend.
+  voiceEnabled: true,
 };
 
 const PREFERENCE_KEYS = Object.keys(DEFAULTS) as UiPreferenceKey[];

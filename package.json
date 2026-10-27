@@ -2,7 +2,7 @@
   "name": "@cloudcli-ai/cloudcli",
   "version": "1.47.0",
   "cloudcliLive": {
-    "upstreamVersion": "1.37.5"
+    "upstreamVersion": "1.37.6"
   },
   "productName": "CloudCLI",
   "description": "A web-based UI for Claude Code CLI",

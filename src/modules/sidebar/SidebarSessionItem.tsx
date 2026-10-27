@@ -184,7 +184,7 @@ function SidebarSessionItem({
           data-session-card
           className={cn(
             'p-2 mx-3 my-0.5 rounded-md bg-card border active:scale-[0.98] transition-all duration-150 relative',
-            isSelected ? 'bg-primary/5 border-primary/20' : '',
+            isSelected ? 'bg-primary/5 border-primary ring-1 ring-primary/60 shadow-[0_0_10px_hsl(var(--primary)/0.45)]' : '',
             !isSelected && isProcessing
               ? 'border-border/60 bg-muted/20'
               : !isSelected && sessionView.isActive
@@ -438,7 +438,7 @@ function SidebarSessionItem({
             buttonVariants({ variant: 'ghost' }),
             'h-auto w-full justify-start rounded-md border bg-card p-2 text-left font-normal transition-all duration-150',
             isSelecting ? 'pr-2' : 'pr-11',
-            isSelected ? 'border-primary/20 bg-primary/5' : 'border-border/30',
+            isSelected ? 'border-primary bg-primary/5 ring-1 ring-primary/60 shadow-[0_0_10px_hsl(var(--primary)/0.45)]' : 'border-border/30',
             !isSelected && isProcessing
               ? 'border-border/60 bg-muted/20 hover:bg-muted/25'
               : !isSelected && sessionView.isActive

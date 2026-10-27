@@ -50,8 +50,15 @@ type UseChatComposerStateArgs = {
   canAbortSession: boolean;
   tokenBudget: Record<string, unknown> | null;
   sendMessage: (message: unknown) => void;
+  /**
+   * CloudCLI live: acknowledged send for chat turns (see WebSocketContext).
+   * Resolves false when the message could not be handed to the server; the
+   * composer then gets the text and files back. Falls back to `sendMessage`.
+   */
+  sendChatMessage?: (message: Record<string, unknown>) => Promise<boolean>;
   sendByCtrlEnter?: boolean;
   onSessionProcessing?: MarkSessionProcessing;
+  onSessionIdle?: (sessionId: string) => void;
   /**
    * Invoked with the freshly allocated session id when the user sends the
    * first message of a brand-new conversation. The backend allocates the id
@@ -244,8 +251,10 @@ export function useChatComposerState({
   canAbortSession,
   tokenBudget,
   sendMessage,
+  sendChatMessage,
   sendByCtrlEnter,
   onSessionProcessing,
+  onSessionIdle,
   onSessionEstablished,
   onFileOpen,
   onShowSettings,
@@ -1077,7 +1086,7 @@ export function useChatComposerState({
       // One message shape for every provider. The backend resolves the
       // provider, project path, and provider-native resume id from the
       // session row; `options` only carries composer-level preferences.
-      sendMessage({
+      const chatFrame = {
         // Replacing an already-sent message is its own frame: it changes the
         // shape of the conversation, so it gets validated separately and can
         // report why it was refused.
@@ -1089,7 +1098,32 @@ export function useChatComposerState({
           ...(queuedSubmission?.options ?? buildSendOptions(messageContent)),
           attachments: uploadedAttachments,
         },
-      });
+      };
+      if (sendChatMessage) {
+        // CloudCLI live: the composer is cleared right away as before; if the
+        // server never takes the message, text and files come back to it.
+        const failedSessionId = targetSessionId;
+        void sendChatMessage(chatFrame).then((sent) => {
+          if (sent) {
+            return;
+          }
+          onSessionIdle?.(failedSessionId);
+          const typedSince = inputValueRef.current;
+          const restored = typedSince.trim() ? `${currentInput}\n\n${typedSince}` : currentInput;
+          setInput(restored);
+          inputValueRef.current = restored;
+          if (currentAttachments.length > 0) {
+            setAttachedFiles((previous) => [...currentAttachments, ...previous]);
+          }
+          addMessage({
+            type: 'error',
+            content: t('composer.sendFailed', { defaultValue: 'Message not sent, try again' }),
+            timestamp: new Date(),
+          });
+        });
+      } else {
+        sendMessage(chatFrame);
+      }
       setEditingAnchorId(null);
 
       // Recorded under the (possibly just-allocated) session id, so the first
@@ -1130,6 +1164,8 @@ export function useChatComposerState({
       scrollToBottom,
       selectedProject,
       sendMessage,
+      sendChatMessage,
+      onSessionIdle,
       sessionKey,
       addMessage,
       setIsUserScrolledUp,
@@ -1229,6 +1265,19 @@ export function useChatComposerState({
       void handleSubmitRef.current?.(createFakeSubmitEvent(), draft, { sendNow: true });
     }
   }, [takeQueuedDraft]);
+
+  /**
+   * CloudCLI live: sends a voice message. The transcript is the message text
+   * (what the agent reads); the recording goes along as an attachment, so the
+   * chat can play it back. Takes the same path as a typed message, so it is
+   * queued while a turn runs.
+   */
+  const sendVoiceMessage = useCallback((recording: File, transcript: string) => {
+    void handleSubmitRef.current?.(createFakeSubmitEvent(), {
+      content: transcript,
+      attachments: [recording],
+    });
+  }, []);
 
   /** CloudCLI live: puts the queue in the order given by the dragged list. */
   const reorderQueuedDrafts = useCallback((orderedIds: string[]) => {
@@ -1558,6 +1607,7 @@ export function useChatComposerState({
     editQueuedDraft,
     deleteQueuedDraft,
     sendQueuedDraftNow,
+    sendVoiceMessage,
     reorderQueuedDrafts,
     handleVoiceTranscript,
     handleInputChange,

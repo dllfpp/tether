@@ -28,7 +28,7 @@ import {
 import CommandMenu from '@/modules/chat/composer/CommandMenu';
 import ActivityIndicator from '@/modules/chat/composer/ActivityIndicator';
 import ComposerAttachment from '@/modules/chat/composer/ComposerAttachment';
-import VoiceInputButton from '@/modules/chat/composer/VoiceInputButton';
+import VoiceMessageButton from '@/modules/chat/composer/VoiceMessageButton';
 import PermissionRequestsBanner from '@/modules/chat/composer/PermissionRequestsBanner';
 import TokenUsageSummary from '@/modules/chat/composer/TokenUsageSummary';
 import QueuedMessageList from '@/modules/chat/composer/QueuedMessageList';
@@ -107,6 +107,8 @@ type ChatComposerProps = {
   textareaRef: RefObject<HTMLTextAreaElement>;
   input: string;
   onVoiceTranscript?: (text: string, send?: boolean) => void;
+  /** CloudCLI live: sends a recorded voice message (attachment + transcript). */
+  onSendVoiceMessage?: (recording: File, transcript: string) => void;
   onInputChange: (event: ChangeEvent<HTMLTextAreaElement>) => void;
   onTextareaClick: (event: MouseEvent<HTMLTextAreaElement>) => void;
   onTextareaKeyDown: (event: KeyboardEvent<HTMLTextAreaElement>) => void;
@@ -184,6 +186,7 @@ export default function ChatComposer({
   textareaRef,
   input,
   onVoiceTranscript,
+  onSendVoiceMessage,
   onInputChange,
   onTextareaClick,
   onTextareaKeyDown,
@@ -471,7 +474,15 @@ export default function ChatComposer({
             </PromptInputButton>
 
             {onVoiceTranscript && voiceAvailable && (
-              <VoiceInputButton state={voiceState} onToggle={voiceToggle} errorMsg={voiceError} />
+              onSendVoiceMessage ? (
+                <VoiceMessageButton
+                  dictationState={voiceState}
+                  onToggleDictation={voiceToggle}
+                  onSendVoice={onSendVoiceMessage}
+                  errorMsg={voiceError}
+                  onError={handleVoiceError}
+                />
+              ) : null
             )}
 
             <TokenUsageSummary usage={tokenBudget} onClick={onShowTokenUsage} />

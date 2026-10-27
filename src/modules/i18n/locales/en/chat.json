@@ -145,7 +145,7 @@
       "ctrlEnter": "Ctrl+Enter to send • Shift+Enter for new line • Tab to change modes • / for slash commands",
       "enter": "Enter to send • Shift+Enter for new line • Tab to change modes • / for slash commands",
       "queue": "Enter to queue your next message",
-      "updateQueued": "Enter to update queued message"
+      "appendQueued": "Enter to add to the queued message"
     },
     "clickToChangeMode": "Click to change permission mode (or press Tab in input)",
     "showAllCommands": "Show all commands",
@@ -153,7 +153,8 @@
     "scrollToBottom": "Scroll to bottom",
     "queue": {
       "sendNext": "Queue next message",
-      "update": "Update queued message",
+      "append": "Add to queued message",
+      "notCombinable": "Failed to queue message: A slash command runs as a turn of its own, so it cannot be combined with the queued message. Send it after the queued message has gone.",
       "label": "Queued",
       "willSend": "Will send when this finishes",
       "edit": "Edit queued message",
@@ -167,11 +168,14 @@
     "loadingModels": "Loading models…",
     "modelMenu": "Select model and reasoning effort",
     "permissionHeading": "How should {{provider}} actions be approved?",
+    "permissionCycleHint": "Press Tab in the message box to switch modes",
+    "permissionTriggerLabel": "{{mode}}: {{heading}}",
     "editing": {
       "title": "Replacing an earlier message",
       "filesNotReverted": "files the agent already changed are not reverted",
       "cancel": "Cancel"
-    }
+    },
+    "sendFailed": "Message not sent, try again"
   },
   "providerSelection": {
     "title": "Choose Your AI Assistant",
@@ -414,5 +418,15 @@
       "stopped": "stopped"
     },
     "loadingOlder": "Loading older history…"
+  },
+  "voiceMessage": {
+    "button": "Tap to dictate, hold to record a voice message",
+    "slideToCancel": "Slide left to cancel",
+    "slideToLock": "Up to lock",
+    "delete": "Delete",
+    "stop": "Stop to listen back",
+    "send": "Send voice message",
+    "sending": "Transcribing and sending…",
+    "untranscribed": "(voice message, transcription not available)"
   }
 }

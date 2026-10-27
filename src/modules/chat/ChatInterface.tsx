@@ -78,7 +78,7 @@ function ChatInterface({
   onShowAllTasks,
 }: ChatInterfaceProps) {
   const { tasksEnabled, isTaskMasterInstalled } = useTasksSettings();
-  const { subscribe } = useWebSocket();
+  const { subscribe, sendChatMessage } = useWebSocket();
   const { t } = useTranslation('chat');
   const processingSessions = useProcessingSessions();
   const {
@@ -228,6 +228,7 @@ function ChatInterface({
     sendQueuedDraftNow,
     reorderQueuedDrafts,
     handleVoiceTranscript,
+    sendVoiceMessage,
     handleInputChange,
     handleKeyDown,
     handlePaste,
@@ -260,8 +261,10 @@ function ChatInterface({
     canAbortSession,
     tokenBudget,
     sendMessage,
+    sendChatMessage,
     sendByCtrlEnter,
     onSessionProcessing,
+    onSessionIdle,
     onSessionEstablished: handleSessionEstablished,
     onFileOpen,
     onShowSettings,
@@ -408,7 +411,7 @@ function ChatInterface({
   }, [onNavigateToSession, selectedSession?.id]);
 
   const { scheduledMessages, schedule: scheduleMessage, cancel: cancelScheduledMessage } =
-    useScheduledMessages(currentSessionId || selectedSession?.id || null);
+    useScheduledMessages(currentSessionId || selectedSession?.id || null, subscribe);
 
   /**
    * Hands the composer's current text to the server to send later, and clears
@@ -686,6 +689,7 @@ function ChatInterface({
           textareaRef={textareaRef}
           input={input}
           onVoiceTranscript={handleVoiceTranscript}
+          onSendVoiceMessage={sendVoiceMessage}
           onInputChange={handleInputChange}
           onTextareaClick={handleTextareaClick}
           onTextareaKeyDown={handleComposerKeyDown}

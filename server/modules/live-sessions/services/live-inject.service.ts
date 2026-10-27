@@ -144,7 +144,9 @@ export function isPromptDrawn(screen: string): boolean {
   const compact = screen.replace(/\x1b\[[0-9;?<>]*[A-Za-z~]/g, '').replace(/\s+/g, '');
   const start = Math.max(compact.lastIndexOf('Wakingsession'), compact.lastIndexOf('Attaching'), compact.lastIndexOf('opening'));
   const tail = start >= 0 ? compact.slice(start) : compact;
-  return tail.includes('foragents') || tail.includes('shift+tabtocycle');
+  // With background shells or agents running, the status bar reads
+  // "· 1 shell · ↓ to manage" instead of the agents and mode hints.
+  return tail.includes('foragents') || tail.includes('shift+tabtocycle') || tail.includes('tomanage');
 }
 
 async function openViaAgentView(
