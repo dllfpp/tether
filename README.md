@@ -166,6 +166,17 @@ node /opt/tether/deploy/reset-mfa.mjs              # turn the authenticator off:
 node /opt/tether/deploy/reset-mfa.mjs --passkeys   # also delete every passkey
 ```
 
+## Job permission prompts
+
+A background job that needs permission ("Do you want to proceed?") normally waits at its terminal and is denied after a timeout. With this hook, the prompt shows in the job's chat in Tether (plus a push notification), and Allow/Deny goes back to the job. Add it to `~/.claude/settings.json` of the user running the jobs:
+
+```json
+"hooks": { "PermissionRequest": [ { "matcher": "*", "hooks": [
+  { "type": "command", "command": "/opt/tether/deploy/permission-hook.sh", "timeout": 130 } ] } ] }
+```
+
+The hook does nothing outside daemon jobs. It talks to Tether on `127.0.0.1` with a token Tether creates next to its database; set `TETHER_HOOK_TOKEN_FILE` / `TETHER_HOOK_URL` if yours are not the defaults (`~/.cloudcli/job-permission-hook.token`, port 3001). Unanswered within ~110 s, Claude Code's own prompt applies.
+
 ## Remote access
 
 Put Tether behind a reverse proxy with HTTPS (Nginx Proxy Manager, Caddy, Traefik) and enable

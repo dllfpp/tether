@@ -473,18 +473,6 @@ export default function ChatComposer({
               <PaperclipIcon />
             </PromptInputButton>
 
-            {onVoiceTranscript && voiceAvailable && (
-              onSendVoiceMessage ? (
-                <VoiceMessageButton
-                  dictationState={voiceState}
-                  onToggleDictation={voiceToggle}
-                  onSendVoice={onSendVoiceMessage}
-                  errorMsg={voiceError}
-                  onError={handleVoiceError}
-                />
-              ) : null
-            )}
-
             <TokenUsageSummary usage={tokenBudget} onClick={onShowTokenUsage} />
 
             <PromptInputButton
@@ -537,6 +525,18 @@ export default function ChatComposer({
               providerLabel={providerLabel}
             />
 
+            {onVoiceTranscript && voiceAvailable && (
+              onSendVoiceMessage ? (
+                <VoiceMessageButton
+                  dictationState={voiceState}
+                  onToggleDictation={voiceToggle}
+                  onSendVoice={onSendVoiceMessage}
+                  errorMsg={voiceError}
+                  onError={handleVoiceError}
+                />
+              ) : null
+            )}
+
             <PromptInputSubmit
               onClick={
                 canQueueDraft
@@ -572,6 +572,7 @@ export default function ChatComposer({
                 <ArrowUpIcon className="h-4 w-4" />
               ) : undefined}
             </PromptInputSubmit>
+
           </div>
 
           <div

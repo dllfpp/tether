@@ -3,7 +3,16 @@ import path from 'node:path';
 import type { WebSocket } from 'ws';
 
 import { sessionsDb } from '@/modules/database/index.js';
-import { deliverToJob, liveSessionsService, markSessionSeen, resolveLiveRoute, startJobFromAgentView } from '@/modules/live-sessions/index.js';
+import {
+  answerJobPermission,
+  deliverToJob,
+  liveSessionsService,
+  markSessionSeen,
+  pendingJobPermissions,
+  resolveLiveRoute,
+  setJobPermissionBroadcast,
+  startJobFromAgentView,
+} from '@/modules/live-sessions/index.js';
 import { providerModelsService, sessionsService } from '@/modules/providers/index.js';
 import { chatRunRegistry } from '@/modules/websocket/services/chat-run-registry.service.js';
 import { broadcastSessionUpserted } from '@/modules/websocket/services/session-upsert-broadcast.service.js';
@@ -22,6 +31,20 @@ import type {
   ProviderRuntimeWriter,
 } from '@/shared/types.js';
 import { createCompleteMessage, parseIncomingJsonObject } from '@/shared/utils.js';
+
+// CloudCLI live: job permission prompts reach every open client.
+setJobPermissionBroadcast((frame) => {
+  const text = JSON.stringify(frame);
+  for (const client of connectedClients) {
+    if (client.readyState === WS_OPEN_STATE) {
+      try {
+        client.send(text);
+      } catch {
+        // a closing socket
+      }
+    }
+  }
+});
 
 /**
  * Trust boundary for client-supplied image attachments: chat.send options come
@@ -731,7 +754,11 @@ function handleChatSubscribe(
 
     // Pending approvals are tracked under the app session id inside the
     // Claude runtime, so they can be looked up directly.
-    const pendingPermissions = dependencies.runtime.getPendingApprovalsForSession(sessionId);
+    // CloudCLI live: plus a daemon job's prompt waiting in its PermissionRequest hook.
+    const pendingPermissions = [
+      ...dependencies.runtime.getPendingApprovalsForSession(sessionId),
+      ...pendingJobPermissions(sessionId),
+    ];
 
     sendJson(ws, {
       kind: 'chat_subscribed',
@@ -761,6 +788,11 @@ function handleChatSubscribe(
  */
 function handlePermissionResponse(data: AnyRecord, dependencies: ChatWebSocketDependencies): void {
   if (typeof data.requestId !== 'string' || data.requestId.length === 0) {
+    return;
+  }
+
+  // CloudCLI live: a daemon job's prompt, waiting in its PermissionRequest hook.
+  if (answerJobPermission(data.requestId, Boolean(data.allow))) {
     return;
   }
 

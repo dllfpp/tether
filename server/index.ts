@@ -19,6 +19,8 @@ import { broadcastSessionsRemoved, broadcastSessionUpsertedBatch, chatRunRegistr
 import {
     archiveDeletedJobSessions,
     liveSessionsRoutes,
+    jobPermissionHookRoutes,
+    ensureJobPermissionToken,
     liveSessionsService,
     loginRateLimit,
     prefetchSuggestions,
@@ -215,6 +217,8 @@ app.use('/api/browser-use', authenticateToken, browserUseRoutes);
 app.use('/api/providers', authenticateToken, providerRoutes);
 app.use('/api/scheduled-messages', authenticateToken, scheduledMessagesRoutes);
 app.use('/api/live', authenticateToken, liveSessionsRoutes);
+// CloudCLI live: daemon jobs' PermissionRequest hook (loopback + token, no login).
+app.use('/api/live-hook', jobPermissionHookRoutes);
 
 // Agent API Routes (uses API key authentication)
 app.use('/api/agent', agentRoutes);
@@ -407,6 +411,7 @@ async function startServer() {
             });
             liveSessionsService.start();
             startJobNotifications();
+            ensureJobPermissionToken();
             startSessionIcons((renamed) => void broadcastSessionUpsertedBatch(renamed));
             // Once the job names are known, bring every stored name in line
             // with Claude Code, including conversations untouched for weeks.

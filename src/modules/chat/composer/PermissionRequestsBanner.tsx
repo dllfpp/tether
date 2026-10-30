@@ -110,7 +110,8 @@ export default function PermissionRequestsBanner({
               >
                 Deny
               </ConfirmationAction>
-              <ConfirmationAction
+              {/* CloudCLI live: a daemon job's prompt is answered once; Tether's own allow list does not reach the job. */}
+              {!request.requestId.startsWith('job-permission:') && <ConfirmationAction
                 variant="outline"
                 onClick={() => {
                   if (permissionEntry && !alreadyAllowed) {
@@ -121,7 +122,7 @@ export default function PermissionRequestsBanner({
                 disabled={!permissionEntry}
               >
                 {rememberLabel}
-              </ConfirmationAction>
+              </ConfirmationAction>}
               <ConfirmationAction
                 variant="default"
                 onClick={() => handlePermissionDecision(request.requestId, { allow: true })}

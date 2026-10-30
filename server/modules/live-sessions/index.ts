@@ -18,4 +18,14 @@ export { startSessionIcons } from './services/session-icons.service.js';
 // isSessionUnread: used by the session lists and upserts to mark a reply not yet read.
 export { isSessionUnread, markSessionSeen } from './services/session-seen.service.js';
 export { default as liveSessionsRoutes } from './live-sessions.routes.js';
+// jobPermissionHookRoutes: used by server startup for the PermissionRequest hook of daemon jobs.
+export { default as jobPermissionHookRoutes } from './job-permission-hook.routes.js';
 export { loginRateLimit } from './login-rate-limit.middleware.js';
+// Job permission prompts (PermissionRequest hook): asked in the chat, answered from there.
+export {
+  answerJobPermission,
+  ensureJobPermissionToken,
+  pendingJobPermissions,
+  requestJobPermission,
+  setJobPermissionBroadcast,
+} from './services/job-permissions.service.js';
