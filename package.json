@@ -1,6 +1,6 @@
 {
   "name": "@cloudcli-ai/cloudcli",
-  "version": "1.49.0",
+  "version": "1.50.0",
   "cloudcliLive": {
     "upstreamVersion": "1.37.6"
   },
