@@ -2,7 +2,7 @@
   "name": "@cloudcli-ai/cloudcli",
   "version": "1.50.0",
   "cloudcliLive": {
-    "upstreamVersion": "1.37.6"
+    "upstreamVersion": "1.37.7"
   },
   "productName": "CloudCLI",
   "description": "A web-based UI for Claude Code CLI",
@@ -144,6 +144,7 @@
     "@octokit/rest": "^22.0.0",
     "@openai/codex": "0.156.1",
     "@openai/codex-sdk": "^0.156.0",
+    "@opencode-ai/sdk": "^1.19.5",
     "@replit/codemirror-minimap": "^0.5.2",
     "@simplewebauthn/browser": "^13.3.0",
     "@simplewebauthn/server": "^13.3.3",

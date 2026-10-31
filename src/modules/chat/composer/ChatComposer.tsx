@@ -296,6 +296,7 @@ export default function ChatComposer({
         <div className="chat-col mb-3">
           <PermissionRequestsBanner
             pendingPermissionRequests={pendingPermissionRequests}
+            providerLabel={providerLabel}
             handlePermissionDecision={handlePermissionDecision}
             handleGrantToolPermission={handleGrantToolPermission}
           />

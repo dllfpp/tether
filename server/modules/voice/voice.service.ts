@@ -118,7 +118,17 @@ function createTranscriptionFormData(
   formData.append('model', sttModel);
   if (hints.sttLanguage) formData.append('language', hints.sttLanguage);
   if (hints.sttPrompt) formData.append('prompt', hints.sttPrompt);
+  // Silence makes Whisper loop on the last words; servers that know this option skip it.
+  formData.append('vad_filter', 'true');
   return formData;
+}
+
+/**
+ * Whisper can still get stuck repeating a word or short phrase ("ok, ok, ok…").
+ * A run of the same 1-6 word phrase three or more times becomes one.
+ */
+export function collapseRepeats(text: string): string {
+  return text.replace(/(\b[^\s,.!?]+(?:\s+[^\s,.!?]+){0,5}?)(?:[,.!?]?\s+\1\b){2,}[,.!?]?/giu, '$1');
 }
 
 /**
@@ -155,10 +165,10 @@ export function createVoiceService(dependencies: VoiceServiceDependencies): Voic
           const parsed = JSON.parse(responseText) as { text?: unknown };
           return {
             ok: true,
-            value: { text: typeof parsed.text === 'string' ? parsed.text : '' },
+            value: { text: typeof parsed.text === 'string' ? collapseRepeats(parsed.text) : '' },
           };
         } catch {
-          return { ok: true, value: { text: responseText } };
+          return { ok: true, value: { text: collapseRepeats(responseText) } };
         }
       } catch (error) {
         return unreachableBackendFailure(error, dependencies.timeoutMs);

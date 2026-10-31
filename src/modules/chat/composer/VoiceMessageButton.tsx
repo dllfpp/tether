@@ -52,6 +52,16 @@ export default function VoiceMessageButton({ dictationState, onToggleDictation, 
     if (review) URL.revokeObjectURL(review.url);
   }, [review]);
 
+  // Dictation (a tap) counts its seconds next to the button, like a voice message does.
+  const [dictationSeconds, setDictationSeconds] = useState(0);
+  useEffect(() => {
+    if (dictationState !== 'recording') return undefined;
+    setDictationSeconds(0);
+    const startedAt = Date.now();
+    const timer = window.setInterval(() => setDictationSeconds(Math.floor((Date.now() - startedAt) / 1000)), 250);
+    return () => window.clearInterval(timer);
+  }, [dictationState]);
+
   const send = useCallback(async (voice: VoiceRecording) => {
     setPhase('sending');
     let transcript = '';
@@ -205,6 +215,12 @@ export default function VoiceMessageButton({ dictationState, onToggleDictation, 
 
   return (
     <span className="relative inline-flex">
+      {phase === 'idle' && dictationState === 'recording' && (
+        <span className="pointer-events-none absolute bottom-full left-1/2 mb-1 flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full bg-background/95 px-2 py-0.5 font-mono text-xs tabular-nums text-foreground shadow-lg ring-1 ring-border">
+          <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" aria-hidden />
+          {clock(dictationSeconds)}
+        </span>
+      )}
       {errorMsg && (
         <span className="absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-red-600 px-2 py-1 text-xs text-white shadow-lg">
           {errorMsg}
